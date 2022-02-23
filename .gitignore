@@ -1,0 +1,12 @@
+# Super simple gitignore
+*
+!/**/
+!*.*
+
+# We want makefiles
+!**/Makefile
+
+# No output files
+**/*.o
+# Nor testing bf files
+**/*.bf
