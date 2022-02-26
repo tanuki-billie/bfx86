@@ -40,25 +40,21 @@ _start:
     jne exit
 
 ; Okay, we have two arguments. Let's hope that the second one is actually a usable argument
-    pop rsi
+    pop rdi
 skipFirstArg:
 ; Lots of stuff going on here, but step by step:
 ; Checks if the current byte is zero.
-    mov al, byte[rsi]
+    mov al, byte[rdi]
+    inc rdi
     test al, al
-; Pushes the flags to the stack
-    pushf
-; Increments our register
-    inc rsi
-; Pops the flags back into the flags register
-    popf
-; And loops if our byte is not zero
-    jnz skipFirstArg
+; If zero, we can move on
+    jz openFile
+; Otherwise, just increment rsi and try again
+    jmp skipFirstArg
 ; At this point, rsi contains the file that needs to be read.
 
 openFile:
-    mov rax, SYS_open
-    mov rdi, rsi
+    mov rax, SYS_open    
     mov rsi, O_RDONLY
     syscall
 
