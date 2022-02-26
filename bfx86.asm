@@ -42,15 +42,11 @@ _start:
 ; Okay, we have two arguments. Let's hope that the second one is actually a usable argument
     pop rdi
 skipFirstArg:
-; Lots of stuff going on here, but step by step:
-; Checks if the current byte is zero.
+; Loads the current byte into rdi, increments rdi, and if it's zero, we move on.
     mov al, byte[rdi]
     inc rdi
     test al, al
-; If zero, we can move on
-    jz openFile
-; Otherwise, just increment rsi and try again
-    jmp skipFirstArg
+    jnz skipFirstArg
 ; At this point, rsi contains the file that needs to be read.
 
 openFile:
