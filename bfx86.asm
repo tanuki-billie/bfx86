@@ -232,8 +232,7 @@ interpreter_loop_end:
     inc rdi
     mov al, byte[rdi]
     test al, al
-    jz end_interpreting
-    jmp interpreter
+    jnz interpreter
 
 exit:
     mov rax, SYS_exit
