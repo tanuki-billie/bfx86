@@ -1,9 +1,8 @@
-; Oh look, it's a brainfuck interpreter / compiler in x86 ASM.
-; I didn't write this with much optimization in mind, to be quite honest.
+; Oh look, it's a brainfuck interpreter / compiler in x86 ASM. I didn't write
+; this with much optimization in mind, to be quite honest.
 
 section .data
-; Constants, gotta love 'em.
-; Call codes
+; Constants, gotta love 'em. Call codes
 SYS_read        equ       0
 SYS_write       equ       1
 SYS_open        equ       2
@@ -26,44 +25,37 @@ NULL            equ       0
 
 section .bss
 
-; Uninitialized data.
-; This is where we store interpreter cells and file data.
+; Uninitialized data. This is where we store interpreter cells and file data.
 cells           resb  CELL_COUNT
 fileBuffer      resb  BUFFER_SIZE
 
 section .text
 global _start
 _start:
-; The first thing we pop off of the stack is argc. We can use this value to see if we need to terminate immediately.
+; The first thing we pop off of the stack is argc. We can use this value to see
+; if we need to terminate immediately.
     pop rsi
     cmp rsi, 2
     jne exit
 
-; Okay, we have two arguments. Let's hope that the second one is actually a usable argument
-    pop rsi
+; Okay, we have two arguments. Let's hope that the second one is actually a
+; usable argument
+    pop rdi
 skipFirstArg:
-; Lots of stuff going on here, but step by step:
-; Checks if the current byte is zero.
-    mov al, byte[rsi]
+; Loads the current byte into rdi, increments rdi, and if it's zero, we move on.
+    mov al, byte[rdi]
+    inc rdi
     test al, al
-; Pushes the flags to the stack
-    pushf
-; Increments our register
-    inc rsi
-; Pops the flags back into the flags register
-    popf
-; And loops if our byte is not zero
     jnz skipFirstArg
 ; At this point, rsi contains the file that needs to be read.
 
 openFile:
-    mov rax, SYS_open
-    mov rdi, rsi
+    mov rax, SYS_open    
     mov rsi, O_RDONLY
     syscall
 
-; If negative, the resulting function should have OF as zero and SF as one
-; But, we can't use jl since the jump would be too far, so we use jge instead
+; If negative, the resulting function should have OF as zero and SF as one But,
+; we can't use jl since the jump would be too far, so we use jge instead
     push rax
     test rax, rax
     jge readFile
@@ -82,8 +74,8 @@ readFile:
     jmp exit
 
 interpreterStart:
-; We did it reddit!
-; Move a NULL character at the end so that we don't have to worry about it later
+; We did it reddit! Move a NULL character at the end so that we don't have to
+; worry about it later
     mov rsi, fileBuffer
     mov byte[rsi + rax], NULL
 
@@ -95,8 +87,8 @@ initializeCells:
     inc rax
     loop initializeCells
 
-; Setup our registers for interpreter action :)
-; rdi contains the file text, rsi contains the cell buffer
+; Setup our registers for interpreter action :) rdi contains the file text, rsi
+; contains the cell buffer
     xor eax, eax
     lea rdi, byte[fileBuffer]
     lea rsi, byte[cells]
@@ -190,8 +182,9 @@ loop_left_bracket:
     jnz interpreter_loop_end
 
 left_bracket_search:
-; We want to find the *matching* right bracket. We use rcx as a counter - [ increments, ] decrements
-; If we find a ] with the counter equaling zero, that's our matching bracket.
+; We want to find the *matching* right bracket. We use rcx as a counter - [
+; increments, ] decrements If we find a ] with the counter equaling zero, that's
+; our matching bracket.
     inc rdi
     mov al, byte[rdi]
     cmp al, '['
@@ -215,8 +208,9 @@ loop_right_bracket:
     jz interpreter_loop_end
 
 right_bracket_search:
-; We want to find the *matching* left bracket. We use rcx as a counter - ] increments, [ decrements
-; If we find a [ with the counter equaling zero, that's our matching bracket.
+; We want to find the *matching* left bracket. We use rcx as a counter - ]
+; increments, [ decrements If we find a [ with the counter equaling zero, that's
+; our matching bracket.
     dec rdi
     mov al, byte[rdi]
     cmp al, ']'
@@ -238,18 +232,8 @@ interpreter_loop_end:
     inc rdi
     mov al, byte[rdi]
     test al, al
-    jz end_interpreting
-    jmp interpreter
+    jnz interpreter
 
-end_interpreting:
-; Probably want to print a linefeed
-    ; mov rax, SYS_write
-    ; mov rdi, STDOUT
-    ; mov rsi, LF
-    ; mov rdx, 1
-    ; syscall
-
-; Exit program
 exit:
     mov rax, SYS_exit
     mov rdi, EXIT_success
