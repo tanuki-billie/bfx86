@@ -235,11 +235,6 @@ interpreter_loop_end:
     jz end_interpreting
     jmp interpreter
 
-end_interpreting:
-; Probably want to print a linefeed
-    ; mov rax, SYS_write mov rdi, STDOUT mov rsi, LF mov rdx, 1 syscall
-
-; Exit program
 exit:
     mov rax, SYS_exit
     mov rdi, EXIT_success
